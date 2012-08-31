@@ -50,7 +50,9 @@
 
     this._.isSimple(this.ctx): {
         this._listLength--;
-        this._buf.push(this.ctx)
+
+        var ctx = this.ctx;
+        (ctx && ctx !== true || ctx === 0) && this._buf.push(ctx);
     }
 
 }
@@ -58,7 +60,7 @@
 
 default: {
     var _this = this,
-        BEM = _this.BEM,
+        BEM_ = _this.BEM,
         v = this.ctx,
         buf = this._buf,
         tag;
@@ -72,7 +74,7 @@ default: {
         if(this.block && v.js !== false) {
             js = apply(this._mode = 'js');
             js = js? this._.extend(v.js, js === true? {} : js) : v.js === true? {} : v.js;
-            js && ((jsParams = {})[BEM.INTERNAL.buildClass(this.block, v.elem)] = js);
+            js && ((jsParams = {})[BEM_.INTERNAL.buildClass(this.block, v.elem)] = js);
         }
 
         buf.push('<', tag);
@@ -88,7 +90,7 @@ default: {
             buf.push(' class="');
             if(isBEM) {
 
-                BEM.INTERNAL.buildClasses(this.block, v.elem, v.elemMods || v.mods, buf);
+                BEM_.INTERNAL.buildClasses(this.block, v.elem, v.elemMods || v.mods, buf);
 
                 var mix = apply(this._mode = 'mix');
                 v.mix && (mix = mix? mix.concat(v.mix) : v.mix);
@@ -101,13 +103,13 @@ default: {
                         block = mixItem.block || _this.block;
 
                         hasItem && buf.push(' ');
-                        BEM.INTERNAL[hasItem? 'buildClasses' : 'buildModsClasses'](
+                        BEM_.INTERNAL[hasItem? 'buildClasses' : 'buildModsClasses'](
                             block,
                             mixItem.elem || (mixItem.block ? undefined : _this.elem),
                             mixItem.elemMods || mixItem.mods,
                             buf);
                         if(mixItem.js) {
-                            (jsParams || (jsParams = {}))[BEM.INTERNAL.buildClass(block, mixItem.elem)] = mixItem.js === true? {} : mixItem.js;
+                            (jsParams || (jsParams = {}))[BEM_.INTERNAL.buildClass(block, mixItem.elem)] = mixItem.js === true? {} : mixItem.js;
                             addJSInitClass || (addJSInitClass = block && !mixItem.elem);
                         }
                     }
@@ -167,33 +169,33 @@ mix: undefined
 content: this.ctx.content
 
 !this._start: {
-    var BEM = {},
+    var BEM_ = {},
         toString = Object.prototype.toString,
         SHORT_TAGS = { // хэш для быстрого определения, является ли тэг коротким
             area : 1, base : 1, br : 1, col : 1, command : 1, embed : 1, hr : 1, img : 1,
             input : 1, keygen : 1, link : 1, meta : 1, param : 1, source : 1, wbr : 1 };
 
-    /** @fileOverview модуль для внутренних BEM-хелперов */
+    /** @fileOverview - module for internal BEM helpers */
     /** @requires BEM */
 
     (function(BEM, undefined) {
 
     /**
-     * Разделитель для модификаторов и их значений
+     * Separator for modifiers and their values
      * @const
      * @type String
      */
     var MOD_DELIM = '_',
 
     /**
-     * Разделитель между именами блока и вложенного элемента
+     * Separator between block names and a nested element
      * @const
      * @type String
      */
         ELEM_DELIM = '__',
 
     /**
-     * Паттерн для допустимых имен элементов и модификаторов
+     * Pattern for acceptable names of elements and modifiers
      * @const
      * @type String
      */
@@ -236,15 +238,15 @@ content: this.ctx.content
         },
 
         /**
-         * Строит класс блока или элемента с учетом модификатора
+         * Builds the class for a block or element with a modifier
          * @private
-         * @param {String} block имя блока
-         * @param {String} [elem] имя элемента
-         * @param {String} [modName] имя модификатора
-         * @param {String} [modVal] имя элемента
-         * @param {Array} [buffer] буфер
-         * @returns {String|Array} строка класса или буфер (в зависимости от наличия параметра buffer)
-         */
+         * @param {String} block Block name
+         * @param {String} [elem] Element name
+         * @param {String} [modName] Modifier name
+         * @param {String} [modVal] Element name
+         * @param {Array} [buffer] Buffer
+         * @returns {String|Array} Class or buffer string (depending on whether the buffer parameter is present)
+    	 */
         buildClass : function(block, elem, modName, modVal, buffer) {
 
             var typeOf = typeof modName;
@@ -278,13 +280,13 @@ content: this.ctx.content
         },
 
         /**
-         * Строит классы модификаторов
+         * Builds modifier classes
          * @private
-         * @param {String} block имя блока
-         * @param {String} [elem] имя элемента
-         * @param {Object} [mods] имя модификатора
-         * @param {Array} [buffer] буфер
-         * @returns {String|Array} строка класса или буфер (в зависимости от наличия параметра buffer)
+         * @param {String} block Block name
+         * @param {String} [elem] Element name
+         * @param {Object} [mods] Modifier name
+         * @param {Array} [buffer] Buffer
+         * @returns {String|Array} Class or buffer string (depending on whether the buffer parameter is present)
          */
         buildModsClasses : function(block, elem, mods, buffer) {
 
@@ -293,7 +295,7 @@ content: this.ctx.content
             if(mods) {
                 var modName; // TODO: разобраться с OmetaJS и YUI Compressor
                 for(modName in mods)
-                    if(mods.hasOwnProperty(modName)) {
+                    if(mods.hasOwnProperty(modName) && mods[modName]) {
                         var modVal = mods[modName];
                         res.push(' ');
                         elem?
@@ -307,13 +309,13 @@ content: this.ctx.content
         },
 
         /**
-         * Строит полные классы блока или элемента с учетом модификаторов
+         * Builds full classes for a block or element with modifiers
          * @private
-         * @param {String} block имя блока
-         * @param {String} [elem] имя элемента
-         * @param {Object} [mods] имя модификатора
-         * @param {Array} [buffer] буфер
-         * @returns {String|Array} строка класса или буфер (в зависимости от наличия параметра buffer)
+         * @param {String} block Block name
+         * @param {String} [elem] Element name
+         * @param {Object} [mods] Modifier name
+         * @param {Array} [buffer] Buffer
+         * @returns {String|Array} Class or buffer string (depending on whether the buffer parameter is present)
          */
         buildClasses : function(block, elem, mods, buffer) {
 
@@ -331,7 +333,7 @@ content: this.ctx.content
 
     };
 
-    })(BEM);
+    })(BEM_);
 
     var buildEscape = (function() {
             var ts = { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' },
@@ -352,7 +354,7 @@ content: this.ctx.content
                 },
                 isSimple: function(obj) {
                     var t = typeof obj;
-                    return t === 'string' || t === 'number';
+                    return t === 'string' || t === 'number' || t === 'boolean';
                 },
                 isShortTag: function(t) {
                     return SHORT_TAGS.hasOwnProperty(t);
@@ -364,12 +366,23 @@ content: this.ctx.content
                     for(n in o2) o2.hasOwnProperty(n) && (res[n] = o2[n]);
                     return res;
                 },
+                identify: (function() {
+                    var cnt = 0,
+                        expando = '__' + (+new Date()),
+                        get = function() { return 'uniq' + ++cnt; };
+                    return function(obj, onlyGet) {
+                        if(!obj) return get();
+                        if(onlyGet || obj[expando]) return obj[expando];
+                        else return (obj[expando] = get());
+                    };
+                })(),
                 xmlEscape: buildEscape('[&<>]'),
                 attrEscape: buildEscape('["&<>]')
             },
-            BEM: BEM,
+            BEM: BEM_,
             isFirst: function() { return this.position === 1 },
-            isLast: function() { return this.position === this._listLength }
+            isLast: function() { return this.position === this._listLength },
+            generateId: function() { return this._.identify(this.ctx); }
         };
     ctx.apply();
     return ctx._buf.join('');

@@ -15,20 +15,20 @@ function buildTestName(desc) {
 BEM.TEST = {
 
     /**
-     * Декларирует тест
+     * Declares a test
      * @protected
-     * @param {String|Object} desc имя блока (простой синтаксис) или описание
-     * @param {Function} test описание теста в формате jasmine
+     * @param {String|Object} desc Block name (simple syntax) or description
+     * @param {Function} test Test description in jasmine format
      */
     decl : function(desc, test) {
 
         var testName = buildTestName(desc);
-        decls[testName] || (decls[testName] = []).push(test);
+        (decls[testName] || (decls[testName] = [])).push(test);
 
     },
 
     /**
-     * Добавляет тесты к "запускатору" тестов
+     * Adds tests to the "test runner"
      * @param {Array} blocks
      */
     add : function(blocks) {

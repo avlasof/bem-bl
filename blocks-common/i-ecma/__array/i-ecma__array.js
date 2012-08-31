@@ -5,25 +5,27 @@ var ptp = Array.prototype,
     methods = {
 
         /**
-         * Находит индекс элемента в массиве
+         * Finds the index of an element in an array
          * @param {Object} item
-         * @param {Number} [fromIdx] начиная с индекса (length - 1 - fromIdx, если fromIdx < 0)
-         * @returns {Number} индекс элемента или -1, если не найдено
+         * @param {Number} [fromIdx] Starting from index (length - 1 - fromIdx, if fromIdx < 0)
+         * @returns {Number} Element index or -1, if not found
          */
         indexOf : function(item, fromIdx) {
 
             fromIdx = +(fromIdx || 0);
 
-            var len = this.length;
+            var t = this, len = t.length;
 
             if(len > 0 && fromIdx < len) {
                 fromIdx = fromIdx < 0? Math.ceil(fromIdx) : Math.floor(fromIdx);
                 fromIdx < -len && (fromIdx = 0);
                 fromIdx < 0 && (fromIdx = fromIdx + len);
 
-                while(fromIdx < len)
-                    if(this[fromIdx++] === item)
-                        return fromIdx - 1;
+                while(fromIdx < len) {
+                    if(fromIdx in t && t[fromIdx] === item)
+                        return fromIdx;
+                    ++fromIdx;
+                }
             }
 
             return -1;
@@ -31,9 +33,9 @@ var ptp = Array.prototype,
         },
 
         /**
-         * Вызывает callback для каждого элемента
-         * @param {Function} callback вызывается для каждого элемента
-         * @param {Object} [ctx=null] контекст для callback
+         * Calls the callback for each element
+         * @param {Function} callback Called for each element
+         * @param {Object} [ctx=null] Callback context
          */
         forEach : function(callback, ctx) {
 
@@ -44,9 +46,9 @@ var ptp = Array.prototype,
         },
 
         /**
-         * Создает массив B из массива A, такой что B[i] = callback(A[i])
-         * @param {Function} callback вызывается для каждого элемента
-         * @param {Object} [ctx=null] контекст для callback
+         * Creates array B from array A so that B[i] = callback(A[i])
+         * @param {Function} callback Called for each element
+         * @param {Object} [ctx=null] Callback context
          * @returns {Array}
          */
         map : function(callback, ctx) {
@@ -62,9 +64,9 @@ var ptp = Array.prototype,
         },
 
         /**
-         * Создает массив, содержащий только те элементы из исходного массива, для которых callback возвращает true.
-         * @param {Function} callback вызывается для каждого элемента
-         * @param {Object} [ctx] контекст для callback
+         * Creates an array containing only the elements from the source array that the callback returns true for. 
+         * @param {Function} callback Called for each element
+         * @param {Object} [ctx] Callback context
          * @returns {Array}
          */
         filter : function(callback, ctx) {
@@ -80,10 +82,10 @@ var ptp = Array.prototype,
         },
 
         /**
-         * Свертывает массив, используя аккумулятор
-         * @param {Function} callback вызывается для каждого элемента
-         * @param {Object} [initialVal] начальное значение аккумулятора
-         * @returns {Object} аккумулятор
+         * Wraps the array using an accumulator
+         * @param {Function} callback Called for each element
+         * @param {Object} [initialVal] Initial value of the accumulator
+         * @returns {Object} Accumulator
          */
         reduce : function(callback, initialVal) {
 
@@ -106,6 +108,42 @@ var ptp = Array.prototype,
                 (res = callback(res, t[i], i, t));
 
             return res;
+
+        },
+
+        /**
+         * Checks whether at least one element in the array meets the condition in the callback
+         * @param {Function} callback
+         * @param {Object} [ctx=this] Callback context
+         * @returns {Boolean}
+         */
+        some : function(callback, ctx) {
+
+            var i = -1, t = this, len = t.length;
+
+            while(++i < len)
+                if(i in t && (ctx ? callback.call(ctx, t[i], i, t) : callback(t[i], i, t)))
+                    return true;
+
+            return false;
+
+        },
+
+        /**
+         * Checks whether every element in the array meets the condition in the callback
+         * @param {Function} callback
+         * @param {Object} [ctx=this] Context of the callback call
+         * @returns {Boolean}
+         */
+        every : function(callback, ctx) {
+
+            var i = -1, t = this, len = t.length;
+
+            while(++i < len)
+                if(i in t && !(ctx ? callback.call(ctx, t[i], i, t) : callback(t[i], i, t)))
+                    return false;
+
+            return true;
 
         }
 
